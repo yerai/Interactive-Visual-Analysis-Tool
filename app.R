@@ -49,47 +49,59 @@ ui <- fluidPage(
     ) 
   ),
   
-  title ="Genre Explorer",
-  plotOutput("graph"),
-  hr(),
-  fluidRow(
-    column(
-      width = 12, 
-      h3("Movie genre explorer")
-    ),
-    column(
-      width = 6,
-      sliderInput(
-        "year_range", 
-        label = h4("Year range"), 
-        min = year_list[1], 
-        max = year_list[length(year_list)-1], 
-        value = c(year_list[1], year_list[length(year_list)-1]),
-        width = '100%')
-    ),
-    column(
-      width = 4,
-      tags$div(align = 'left',
-               class = 'multicol',
-               checkboxGroupInput(inputId  = 'genres_selected',
-                                  label    = h4("Genres displayed"), 
-                                  choices  = genres_list,
-                                  selected = genres_list,
-                                  width = '100%',
-                                  inline   = TRUE)
-               )
-    ),
-    column(
-      width = 2,
-      radioButtons("color_palette", 
-                   label = h4("Color palette"), 
-                   choices = c("Light", "Dark"), 
-                   selected = "Light",
-                   inline = FALSE, 
-                   width = '100%')
-      )
-  )
-)
+  navbarPage("Movie Interactive Visual Analysis Tool",
+    tabPanel(
+       title ="Genre Explorer",
+       plotOutput("graph"),
+       hr(),
+       fluidRow(
+         column(
+           width = 12, 
+           h3("Movie genre explorer")
+         ),
+         column(
+           width = 6,
+           sliderInput(
+             "year_range", 
+             label = h4("Year range"), 
+             min = year_list[1], 
+             max = year_list[length(year_list)-1], 
+             value = c(year_list[1], year_list[length(year_list)-1]),
+             width = '100%')
+         ),
+         column(
+           width = 4,
+           tags$div(align = 'left',
+                    class = 'multicol',
+                    checkboxGroupInput(inputId  = 'genres_selected',
+                                       label    = h4("Genres displayed"), 
+                                       choices  = genres_list,
+                                       selected = genres_list,
+                                       width = '100%',
+                                       inline   = TRUE)
+                    )
+          ),
+         column(
+           width = 2,
+           radioButtons("color_palette", 
+                        label = h4("Color palette"), 
+                        choices = c("Light", "Dark"), 
+                        selected = "Light",
+                        inline = FALSE, 
+                        width = '100%')
+         )
+        )#FluidRow
+             
+    ),#TabPanel 1
+    tabPanel(
+      title ="Best Movies"
+    )#TabPanel 2
+  )#Navbar
+)#UI
+
+                 
+     
+
 
 # Define server logic ----
 server <- function(input, output) {
