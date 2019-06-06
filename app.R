@@ -52,7 +52,7 @@ ui <- fluidPage(
   navbarPage("Movie Interactive Visual Analysis Tool",
     tabPanel(
        title ="Genre Trends",
-       plotOutput("graph"),
+       plotlyOutput("graph"),
        hr(),
        fluidRow(
          column(
@@ -155,7 +155,7 @@ ui <- fluidPage(
 # Define server logic ----
 server <- function(input, output) {
   
-  output$graph <- renderPlot({
+  output$graph <- renderPlotly({
     
     start_year <- input$year_range[1]
     end_year <- input$year_range[2]
@@ -197,24 +197,69 @@ server <- function(input, output) {
     t_lista <- t(lista)
     
     
-    # Plot graph ---
-    xrange <- range(filtered_year_list)
-    yrange <- c(0,max(as.numeric(unlist(t_lista))))
+  # Plot graph ---
+  #  xrange <- range(filtered_year_list)
+  #  yrange <- c(0,max(as.numeric(unlist(t_lista))))
 
-    plot(xrange,
-         yrange,
-         type="n",
-         xlab="Años",
-         ylab="Numero de pelis", 
-         main="Titulo del grafico",
-         sub="Subtitulo del grafico")
+  #  p <-plot(xrange,
+  #       yrange,
+  #       type="n",
+  #       xlab="Años",
+  #       ylab="Numero de pelis", 
+  #       main="Titulo del grafico",
+  #       sub="Subtitulo del grafico")
     
-    genre_count = 1
-    for (genre in filtered_genres_list){
-      lines(filtered_year_list, t_lista[genre_count,], pch=19, col=colors[genre_count], type="l", lty=1, lwd=4)
-    genre_count = genre_count + 1
+  #  genre_count = 1
+  #  for (genre in filtered_genres_list){
+  #    lines(filtered_year_list, t_lista[genre_count,], pch=19, col=colors[genre_count], type="l", lty=1, lwd=4)
+  #    genre_count = genre_count + 1
+  #  }
+  #  legend("topleft", legend=filtered_genres_list, col=colors, lty=1, cex=0.8, lwd=6)
+    
+    
+    data <- data.frame(t_lista)
+    P <- plot_ly(data, type = "scatter", mode="markers")%>% 
+      layout(title = "Plot Title",
+             xaxis = list(title = "Year"),
+             yaxis = list(title = "Number of Movies")) %>% 
+      config(displayModeBar = F)
+    
+    genre_count = length(filtered_genres_list)
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[1,], type="scatter", mode="lines", name=filtered_genres_list[1])
+      genre_count = genre_count - 1
     }
-    legend("topleft", legend=filtered_genres_list, col=colors, lty=1, cex=0.8, lwd=6)
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[2,], type="scatter", mode="lines", name=filtered_genres_list[2])
+      genre_count = genre_count - 1
+    }
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[3,], type="scatter", mode="lines", name=filtered_genres_list[3])
+      genre_count = genre_count - 1
+    }
+    
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[4,], type="scatter", mode="lines", name=filtered_genres_list[4])
+      genre_count = genre_count - 1
+    }
+    
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[5,], type="scatter", mode="lines", name=filtered_genres_list[5])
+      genre_count = genre_count - 1
+    }
+    
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[6,], type="scatter", mode="lines", name=filtered_genres_list[6])
+      genre_count = genre_count - 1
+    }
+    
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[7,], type="scatter", mode="lines", name=filtered_genres_list[7])
+      genre_count = genre_count - 1
+    }
+
+    P
+
   })
   
   output$graph2 <- renderPlotly({
@@ -277,6 +322,41 @@ server <- function(input, output) {
     
   })
   
+  output$graph3 <- renderPlotly({
+    
+    
+    movie_decades <- c()
+    for(year in movies$year){
+      movie_decades <- c(movie_decades,paste(substr(as.character(year),1,3), sep="", 0))
+    }
+    
+    movies_rating <- data.frame(x = movie_decades, y = movies$rating)
+    
+    
+    p <- movies_rating %>%
+      plot_ly(
+        x = ~x,
+        y = ~y,
+        split = ~x,
+        type = 'violin',
+        box = list(
+          visible = T
+        ),
+        meanline = list(
+          visible = T
+        )
+      ) %>% 
+      layout(
+        xaxis = list(
+          title = "Decade"
+        ),
+        yaxis = list(
+          title = "Rating",
+          zeroline = F
+        )
+      )
+    
+  })
 }
 
 # Run the app ----
