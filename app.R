@@ -1,6 +1,5 @@
 # Load packages ----
 library(shiny)
-library(ggplot2)
 library(plotly)
 
 # Load data ----
@@ -23,6 +22,38 @@ ui <- fluidPage(
     tags$style(
       HTML(
         "
+        body{
+          color: #2F2F2F;
+          font-family: 'Raleway', sans-serif;
+          
+        }
+
+        h4{
+          font-family: 'Lato', sans-serif;
+          font-weight: bold;
+        }
+  
+        .navbar-default {
+          background-color: #F4F4F4;
+          border-color: #e7e7e700;
+          border-radius: 10px;
+          margin-top: 10px;
+        }
+
+        .navbar-default .navbar-brand {
+          color: #2F2F2F;
+          font-weight: 600;
+        }
+
+        #control_panel{
+          background-color: #F4F4F4;
+          padding:10px;
+          margin-top: 20px;
+          border-radius: 10px;
+        }        
+  
+        
+
         .multicol .shiny-options-group{
             -webkit-column-count: 3; /* Chrome, Safari, Opera */
             -moz-column-count: 3;    /* Firefox */
@@ -51,12 +82,16 @@ ui <- fluidPage(
     ) 
   ),
   
-  navbarPage("Movie Interactive Visual Analysis Tool",
+  navbarPage(
+    title = "Movie Interactive Visual Analysis Tool",
+    position = "static-top",
+    collapsible = "TRUE",
+    windowTitle = "Movie Interactive Visual Analysis Tool",
     tabPanel(
        title ="Genre Trends",
        plotlyOutput("graph"),
-       hr(),
        fluidRow(
+         id='control_panel',
          column(
            width = 6,
            sliderInput(
@@ -94,8 +129,8 @@ ui <- fluidPage(
     tabPanel(
       title ="Budget & Rating",
       plotlyOutput("graph2"),
-      hr(),
       fluidRow(
+        id='control_panel',
         column(
           width = 6,
           sliderInput(
@@ -117,7 +152,7 @@ ui <- fluidPage(
             width = '100%')
         ),
         column(
-          width = 4,
+          width = 3,
           tags$div(align = 'left',
                    class = 'multicol',
                    checkboxGroupInput(inputId  = 'mpaa_selected',
@@ -149,11 +184,10 @@ ui <- fluidPage(
         column(
           width = 4,
           plotlyOutput("graph4")
-        ),
-        column(
-          width =12,
-          hr()
-        ),
+        )
+      ),
+      fluidRow(
+        id='control_panel',
         column(
           width = 6,
           tags$div(align = 'left',
