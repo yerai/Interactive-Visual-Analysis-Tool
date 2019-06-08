@@ -58,10 +58,6 @@ ui <- fluidPage(
        hr(),
        fluidRow(
          column(
-           width = 12, 
-           h3("Controls")
-         ),
-         column(
            width = 6,
            sliderInput(
              "year_range", 
@@ -96,14 +92,10 @@ ui <- fluidPage(
              
     ),
     tabPanel(
-      title ="Movies",
+      title ="Budget & Rating",
       plotlyOutput("graph2"),
       hr(),
       fluidRow(
-        column(
-          width = 12, 
-          h3("Controls")
-        ),
         column(
           width = 6,
           sliderInput(
@@ -148,8 +140,7 @@ ui <- fluidPage(
       )#FluidRow
     ),
     tabPanel(
-      title ="Rating",
-      hr(),
+      title ="Rating Trends",
       fluidRow(
         column(
           width = 8,
@@ -160,11 +151,11 @@ ui <- fluidPage(
           plotlyOutput("graph4")
         ),
         column(
-          width = 12, 
-          h3("Controls")
+          width =12,
+          hr()
         ),
         column(
-          width = 10,
+          width = 6,
           tags$div(align = 'left',
                    class = 'multicol',
                    checkboxGroupInput(inputId  = 'decades_selected',
@@ -180,14 +171,14 @@ ui <- fluidPage(
           radioButtons("color_palette_violin", 
                        label = h4("Color palette"), 
                        choices = c("Light", "Dark"), 
-                       selected = "Light",
+                       selected = "Dark",
                        inline = FALSE, 
                        width = '100%')
         )
-      )#FluidRow
-    )#TabPanel 3
-  )#Navbar
-)#UI
+      )
+    )
+  )
+)
 
 
 # Define server logic ----
@@ -241,9 +232,9 @@ server <- function(input, output) {
                  type = "scatter", 
                  mode ="lines"
                  )%>% 
-      layout(title = "Plot Title",
+      layout(title = "Number of movies released across the years",
              xaxis = list(title = "Year"),
-             yaxis = list(title = "Number of Movies")) %>% 
+             yaxis = list(title = "Number of Movies Released")) %>% 
       config(displayModeBar = F)
     
     #Add as many traces as genres selected ---
@@ -374,9 +365,9 @@ server <- function(input, output) {
           visible = T
         )
       ) %>% 
-      layout(title = "Plot Title",
+      layout(title = "Average Movie Rating per Decade",
              xaxis = list(title = "Decade"),
-             yaxis = list(title = "Rating")) %>% 
+             yaxis = list(title = "Average Rating")) %>% 
       config(displayModeBar = F)
     
   })
@@ -423,9 +414,9 @@ server <- function(input, output) {
       type = "bar"
       
     )%>% 
-      layout(title = "Plot Title",
+      layout(title = "Vote Count per Decade",
              xaxis = list(title = "Decade"),
-             yaxis = list(title = "Number of votes")) %>% 
+             yaxis = list(title = "Number of Votes")) %>% 
       config(displayModeBar = F)
     
     
