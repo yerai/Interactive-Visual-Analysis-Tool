@@ -5,6 +5,8 @@ library(plotly)
 
 # Load data ----
 movies <- readRDS("data/movies.rds")
+decades_rating <- readRDS("data/decades_rating.Rda")
+decades_votes <- readRDS("data/decades_votes.Rda")
 
 # Global variables ----
 year_list <- sort(unique(movies$year))
@@ -90,9 +92,9 @@ ui <- fluidPage(
                         inline = FALSE, 
                         width = '100%')
          )
-        )#FluidRow
+        )
              
-    ),#TabPanel 1
+    ),
     tabPanel(
       title ="Movies",
       plotlyOutput("graph2"),
@@ -126,10 +128,10 @@ ui <- fluidPage(
           width = 4,
           tags$div(align = 'left',
                    class = 'multicol',
-                   checkboxGroupInput(inputId  = 'decades_selected',
-                                      label    = h4("Decades displayed"), 
-                                      choices  = c("1910","1920","1930","1940","1950","1960","1970","1980","1990","2000"),
-                                      selected = c("1910","1920","1930","1940","1950","1960","1970","1980","1990","2000"),
+                   checkboxGroupInput(inputId  = 'mpaa_selected',
+                                      label    = h4("MPAA displayed"), 
+                                      choices  = c("NC-17","PG","PG-13","R"),
+                                      selected = c("NC-17","PG","PG-13","R"),
                                       width = '100%',
                                       inline   = TRUE)
           )
@@ -139,17 +141,53 @@ ui <- fluidPage(
           radioButtons("color_palette_scatter", 
                        label = h4("Color palette"), 
                        choices = c("Light", "Dark"), 
-                       selected = "Dark",
+                       selected = "Light",
                        inline = FALSE, 
                        width = '100%')
         )
       )#FluidRow
-    )#TabPanel 2
+    ),
+    tabPanel(
+      title ="Rating",
+      hr(),
+      fluidRow(
+        column(
+          width = 8,
+          plotlyOutput("graph3")
+        ),
+        column(
+          width = 4,
+          plotlyOutput("graph4")
+        ),
+        column(
+          width = 12, 
+          h3("Controls")
+        ),
+        column(
+          width = 10,
+          tags$div(align = 'left',
+                   class = 'multicol',
+                   checkboxGroupInput(inputId  = 'decades_selected',
+                                      label    = h4("Decades displayed"), 
+                                      choices  = c("1890", "1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000"),
+                                      selected = c("1890", "1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000"),
+                                      width = '100%',
+                                      inline   = TRUE)
+          )
+        ),
+        column(
+          width = 2,
+          radioButtons("color_palette_violin", 
+                       label = h4("Color palette"), 
+                       choices = c("Light", "Dark"), 
+                       selected = "Light",
+                       inline = FALSE, 
+                       width = '100%')
+        )
+      )#FluidRow
+    )#TabPanel 3
   )#Navbar
 )#UI
-
-                 
-     
 
 
 # Define server logic ----
@@ -172,11 +210,11 @@ server <- function(input, output) {
     filtered_genres_list <- input$genres_selected
     
     # Get color selected ---
-    colors <- c()
+    color_selected <- c()
     if (input$color_palette == "Light"){
-      colors <-  c('#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628')
+      color_selected = c("rgb(228,26,28)","rgb(55,126,184)","rgb(77,175,74)","rgb(152,78,163)","rgb(255,127,0)","rgb(255,255,51)","rgb(166,86,40)")
     }else{
-      colors <- c('#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d')
+      color_selected = c("rgb(27,158,119)","rgb(217,95,2)","rgb(117,112,179)","rgb(231,41,138)","rgb(102,166,30)","rgb(230,171,2)","rgb(166,118,29)")
     }
       
     #Get genres total list ---
@@ -194,67 +232,52 @@ server <- function(input, output) {
       year_count = year_count + 1
     }
     
+    #Build Data Frame ---
     t_lista <- t(lista)
-    
-    
-  # Plot graph ---
-  #  xrange <- range(filtered_year_list)
-  #  yrange <- c(0,max(as.numeric(unlist(t_lista))))
-
-  #  p <-plot(xrange,
-  #       yrange,
-  #       type="n",
-  #       xlab="Años",
-  #       ylab="Numero de pelis", 
-  #       main="Titulo del grafico",
-  #       sub="Subtitulo del grafico")
-    
-  #  genre_count = 1
-  #  for (genre in filtered_genres_list){
-  #    lines(filtered_year_list, t_lista[genre_count,], pch=19, col=colors[genre_count], type="l", lty=1, lwd=4)
-  #    genre_count = genre_count + 1
-  #  }
-  #  legend("topleft", legend=filtered_genres_list, col=colors, lty=1, cex=0.8, lwd=6)
-    
-    
     data <- data.frame(t_lista)
-    P <- plot_ly(data, type = "scatter", mode="markers")%>% 
+    
+    #Display plot ---
+    P <- plot_ly(data,
+                 type = "scatter", 
+                 mode ="lines"
+                 )%>% 
       layout(title = "Plot Title",
              xaxis = list(title = "Year"),
              yaxis = list(title = "Number of Movies")) %>% 
       config(displayModeBar = F)
     
+    #Add as many traces as genres selected ---
     genre_count = length(filtered_genres_list)
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[1,], type="scatter", mode="lines", name=filtered_genres_list[1])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[1,], name=filtered_genres_list[1], line = list(color = color_selected[1], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[1,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[1]))
       genre_count = genre_count - 1
     }
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[2,], type="scatter", mode="lines", name=filtered_genres_list[2])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[2,], name=filtered_genres_list[2], line = list(color = color_selected[2], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[2,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[2]))
       genre_count = genre_count - 1
     }
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[3,], type="scatter", mode="lines", name=filtered_genres_list[3])
-      genre_count = genre_count - 1
-    }
-    
-    if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[4,], type="scatter", mode="lines", name=filtered_genres_list[4])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[3,], name=filtered_genres_list[3], line = list(color = color_selected[3], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[3,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[3]))
       genre_count = genre_count - 1
     }
     
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[5,], type="scatter", mode="lines", name=filtered_genres_list[5])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[4,], name=filtered_genres_list[4], line = list(color = color_selected[4], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[4,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[4]))
       genre_count = genre_count - 1
     }
     
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[6,], type="scatter", mode="lines", name=filtered_genres_list[6])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[5,], name=filtered_genres_list[5], line = list(color = color_selected[5], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[5,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[5]))
       genre_count = genre_count - 1
     }
     
     if(genre_count > 0){
-      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[7,], type="scatter", mode="lines", name=filtered_genres_list[7])
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[6,], name=filtered_genres_list[6], line = list(color = color_selected[6], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[6,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[6]))
+      genre_count = genre_count - 1
+    }
+    
+    if(genre_count > 0){
+      P <- add_trace(P,x=~filtered_year_list, y = ~t_lista[7,], name=filtered_genres_list[7], line = list(color = color_selected[7], width = 3), hoverinfo = "text", hovertext = paste('</br> Number of Movies: ', t_lista[7,], '</br> Year: ', filtered_year_list, '</br> Genre: ', filtered_genres_list[7]))
       genre_count = genre_count - 1
     }
 
@@ -266,78 +289,83 @@ server <- function(input, output) {
     budget_list <- c()
     title_list <- c()
     rating_list <- c()
-    decade_list <- c()
+    mpaa_list <- c()
     
     counter = 1;
     for(budget in movies$budget){
       if(!(budget == 0) && !is.na(budget)){
         if(budget >= input$budget_range[1] && budget <= input$budget_range[2]
-            && movies$rating[counter] >= input$rating_range[1] && movies$rating[counter] <= input$rating_range[2]){
-          decade <- paste(substr(as.character(movies$year[counter]),1,3), sep="", 0)
-          if(decade %in% input$decades_selected){
+            && movies$rating[counter] >= input$rating_range[1] && movies$rating[counter] <= input$rating_range[2]
+            && !(movies$mpaa[counter] == "") && !is.na(movies$mpaa[counter])
+            && movies$mpaa[counter] %in% input$mpaa_selected){
+          
             budget_list <- c(budget_list, budget)
             title_list <- c(title_list, movies$title[counter])
             rating_list <- c(rating_list, movies$rating[counter])
-            decade_list <- c(decade_list, paste(substr(as.character(movies$year[counter]),1,3), sep="", 0))
-          }
+            mpaa_list <- c(mpaa_list, movies$mpaa[counter])
         }
       }
       counter = counter + 1
     }
     
     # Get color selected ---
-    colors <- c()
+    color_selected_scatter <- c()
     if (input$color_palette_scatter == "Light"){
-      colors <-  c('#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd')
+      color_selected_scatter = c("#e41a1c","#377eb8","#4daf4a","#984ea3")
     }else{
-      colors <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a')
+      color_selected_scatter = c("#1b9e77","#d95f02","#7570b3","#e7298a")
     }
     
     p <- plot_ly(x = budget_list, 
                  y = rating_list,
-                 color = decade_list,
-                 colors = colors,
+                 color = mpaa_list,
+                 colors = color_selected_scatter,
                  type = "scatter",
                  mode = "markers",
-                 hoverinfo = "text",
-                 hovertext = paste(title_list)
-                 
-                 #marker = list(size = 10,
-                               #color = 'rgba(255, 182, 193, .9)',
-                               #line = list(color = 'rgba(152, 0, 0, .8)',
-                                #           width = 2))
+                 hoverinfo = "text", 
+                 hovertext = paste('</br> Title: ', title_list, 
+                                   '</br> Budget: ', budget_list, 
+                                   '</br> Rating: ', rating_list)
                  )%>% 
           layout(title = "Plot Title",
                  xaxis = list(title = "Budget"),
                  yaxis = list(title = "Rating")) %>% 
           config(displayModeBar = F)
     
-   
-    
-    #plot(budget_list, rating_list, main="Scatterplot Example", 
-    #     xlab="budget", ylab="rating", pch=19)
-    
-    #text(budget_list, rating_list, labels=title_list, cex= 0.7, pos=3)
-    
-    
   })
   
   output$graph3 <- renderPlotly({
     
-    
-    movie_decades <- c()
-    for(year in movies$year){
-      movie_decades <- c(movie_decades,paste(substr(as.character(year),1,3), sep="", 0))
+    rows_to_delete <- c()
+    counter = 1
+    for(decade in decades_rating$x){
+      if(!(is.element(decade, input$decades_selected))){
+        rows_to_delete <- c(rows_to_delete,counter)
+      }
+      counter = counter + 1
     }
     
-    movies_rating <- data.frame(x = movie_decades, y = movies$rating)
+    if(!is.null(rows_to_delete)){
+      movies_rating <- decades_rating[-rows_to_delete, ] 
+    }else{
+      movies_rating <- decades_rating
+    }
     
+    # Get color selected ---
+    color_selected_violin <- c()
+    if (input$color_palette_violin == "Light"){
+      color_selected_violin = c('#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+    }else{
+      color_selected_violin = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928')
+    }
     
     p <- movies_rating %>%
       plot_ly(
         x = ~x,
         y = ~y,
         split = ~x,
+        color = ~x,
+        colors = color_selected_violin,
         type = 'violin',
         box = list(
           visible = T
@@ -346,17 +374,64 @@ server <- function(input, output) {
           visible = T
         )
       ) %>% 
-      layout(
-        xaxis = list(
-          title = "Decade"
-        ),
-        yaxis = list(
-          title = "Rating",
-          zeroline = F
-        )
-      )
+      layout(title = "Plot Title",
+             xaxis = list(title = "Decade"),
+             yaxis = list(title = "Rating")) %>% 
+      config(displayModeBar = F)
     
   })
+  
+  output$graph4 <- renderPlotly({
+    
+    counter = 1
+    rows_to_delete_votes <- c()
+   
+    for(decade in decades_votes$x){
+      if (!(is.element(decade, input$decades_selected))){
+        print(!(is.element(decade, input$decades_selected)))
+        print(decade)
+        print(input$decades_selected)
+        rows_to_delete_votes <- c(rows_to_delete_votes, counter)
+      }
+      counter = counter + 1
+    }
+    
+   
+    
+  
+    
+    if(!(is.null(rows_to_delete_votes))){
+      decades_voting <- decades_votes[-rows_to_delete_votes, ] 
+    }else{
+      decades_voting <- decades_votes
+    }
+    
+   
+    
+
+    # Get color selected ---
+    color_selected_violin <- c()
+    if (input$color_palette_violin == "Light"){
+      color_selected_violin = c('#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f')
+    }else{
+      color_selected_violin = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928')
+    }
+    
+    p <- plot_ly( 
+      x = ~decades_voting[,1],
+      y = ~decades_voting[,2],
+      type = "bar"
+      
+    )%>% 
+      layout(title = "Plot Title",
+             xaxis = list(title = "Decade"),
+             yaxis = list(title = "Number of votes")) %>% 
+      config(displayModeBar = F)
+    
+    
+    
+  })
+  
 }
 
 # Run the app ----
