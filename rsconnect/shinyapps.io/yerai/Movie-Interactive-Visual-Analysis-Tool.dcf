@@ -1,0 +1,12 @@
+name: Movie-Interactive-Visual-Analysis-Tool
+title: Movie-Interactive-Visual-Analysis-Tool
+username:
+account: yerai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 971975
+bundleId: 2140954
+url: https://yerai.shinyapps.io/Movie-Interactive-Visual-Analysis-Tool/
+when: 1560101505.59292
+asMultiple: FALSE
+asStatic: FALSE

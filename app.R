@@ -27,7 +27,13 @@ ui <- fluidPage(
           font-family: 'Raleway', sans-serif;
           
         }
-
+        
+        h3{
+          font-size: 20px;
+          font-family: 'Lato', sans-serif;
+          font-weight: bold;
+          margin-top: 0px;
+        }
         h4{
           font-family: 'Lato', sans-serif;
           font-weight: bold;
@@ -89,6 +95,7 @@ ui <- fluidPage(
     windowTitle = "Movie Interactive Visual Analysis Tool",
     tabPanel(
        title ="Genre Trends",
+       h3("Which genres of movies are most prevalent among the years?"),
        plotlyOutput("graph"),
        fluidRow(
          id='control_panel',
@@ -128,6 +135,7 @@ ui <- fluidPage(
     ),
     tabPanel(
       title ="Budget & Rating",
+      h3("How has movie budget affected rating?"),
       plotlyOutput("graph2"),
       fluidRow(
         id='control_panel',
@@ -176,6 +184,7 @@ ui <- fluidPage(
     ),
     tabPanel(
       title ="Rating Trends",
+      h3("How has the number of votes of a movie and distribution of average movie rating changed over time?"),
       fluidRow(
         column(
           width = 8,
@@ -266,8 +275,7 @@ server <- function(input, output) {
                  type = "scatter", 
                  mode ="lines"
                  )%>% 
-      layout(title = "Number of movies released across the years",
-             xaxis = list(title = "Year"),
+      layout(xaxis = list(title = "Year"),
              yaxis = list(title = "Number of Movies Released")) %>% 
       config(displayModeBar = F)
     
@@ -316,6 +324,7 @@ server <- function(input, output) {
     rating_list <- c()
     mpaa_list <- c()
     
+    # Filter according to budget, rating and mpaa --
     counter = 1;
     for(budget in movies$budget){
       if(!(budget == 0) && !is.na(budget)){
@@ -341,6 +350,7 @@ server <- function(input, output) {
       color_selected_scatter = c("#1b9e77","#d95f02","#7570b3","#e7298a")
     }
     
+    # Display graph -- 
     p <- plot_ly(x = budget_list, 
                  y = rating_list,
                  color = mpaa_list,
@@ -349,11 +359,10 @@ server <- function(input, output) {
                  mode = "markers",
                  hoverinfo = "text", 
                  hovertext = paste('</br> Title: ', title_list, 
-                                   '</br> Budget: ', budget_list, 
+                                   '</br> Budget: ', budget_list, '$',
                                    '</br> Rating: ', rating_list)
                  )%>% 
-          layout(title = "Plot Title",
-                 xaxis = list(title = "Budget"),
+          layout(xaxis = list(title = "Budget (Dollars)"),
                  yaxis = list(title = "Rating")) %>% 
           config(displayModeBar = F)
     
@@ -361,6 +370,7 @@ server <- function(input, output) {
   
   output$graph3 <- renderPlotly({
     
+    # Filter by decades -- 
     rows_to_delete <- c()
     counter = 1
     for(decade in decades_rating$x){
@@ -370,6 +380,7 @@ server <- function(input, output) {
       counter = counter + 1
     }
     
+    # Treat null option -- 
     if(!is.null(rows_to_delete)){
       movies_rating <- decades_rating[-rows_to_delete, ] 
     }else{
@@ -384,6 +395,7 @@ server <- function(input, output) {
       color_selected_violin = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928')
     }
     
+    # Display plot -- 
     p <- movies_rating %>%
       plot_ly(
         x = ~x,
@@ -399,8 +411,7 @@ server <- function(input, output) {
           visible = T
         )
       ) %>% 
-      layout(title = "Average Movie Rating per Decade",
-             xaxis = list(title = "Decade"),
+      layout(xaxis = list(title = "Decade"),
              yaxis = list(title = "Average Rating")) %>% 
       config(displayModeBar = F)
     
@@ -408,32 +419,25 @@ server <- function(input, output) {
   
   output$graph4 <- renderPlotly({
     
+    
     counter = 1
     rows_to_delete_votes <- c()
    
+    # Filter by decade -- 
     for(decade in decades_votes$x){
       if (!(is.element(decade, input$decades_selected))){
-        print(!(is.element(decade, input$decades_selected)))
-        print(decade)
-        print(input$decades_selected)
         rows_to_delete_votes <- c(rows_to_delete_votes, counter)
       }
       counter = counter + 1
     }
     
-   
-    
-  
-    
+    # Treat null value -- 
     if(!(is.null(rows_to_delete_votes))){
       decades_voting <- decades_votes[-rows_to_delete_votes, ] 
     }else{
       decades_voting <- decades_votes
     }
     
-   
-    
-
     # Get color selected ---
     color_selected_violin <- c()
     if (input$color_palette_violin == "Light"){
@@ -442,19 +446,18 @@ server <- function(input, output) {
       color_selected_violin = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928')
     }
     
+    # Display plot -- 
     p <- plot_ly( 
       x = ~decades_voting[,1],
       y = ~decades_voting[,2],
-      type = "bar"
-      
+      type = "bar",
+      hoverinfo = "text", 
+      hovertext = paste('</br> Decade: ', decades_voting[,1], 
+                        '</br> Number of Votes: ', decades_voting[,2])
     )%>% 
-      layout(title = "Vote Count per Decade",
-             xaxis = list(title = "Decade"),
+      layout(xaxis = list(title = "Decade"),
              yaxis = list(title = "Number of Votes")) %>% 
       config(displayModeBar = F)
-    
-    
-    
   })
   
 }
