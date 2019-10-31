@@ -3,7 +3,7 @@
 <h3>Goal</h3>
 <p>This exercise will consist in the design and implementation of a interactive visualization tool. The design of this tool, like any other interactive analysis tool, must solve the particular problems that an “end user” or “analyst” has to deal with when facing some data that he wants to analyze in a work session.<p>
   
-![alt text](https://github.com/yerai/yerai.github.io/blob/master/images/rstudio.png?raw=true)
+![alt text](https://github.com/yerai/yerai.github.io/blob/master/images/rstudio.jpg?raw=true)
 
 <h3>Minimum constraints</h3>
 <p>These questions must comply, at least, with the following minimum constraints:</p>
